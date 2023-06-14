@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: node-rest-deployment
+spec:
+ replicas: 4
+ selector:
+   matchLabels:
+    app: node-app
+ template:
+   metadata:
+    name: node-app-pod
+    labels:
+     app: node-app
+   spec:
+     containers:
+     - name: node-app-container
+       image: deepdocker1987/nagpnodeapp:latest
+       ports:
+          - containerPort: 3000
+       envFrom:
+          # Load the environment variables/PostgresSQL credentials
+          - configMapRef:
+              # This should be the ConfigMap name created ealier
+              name: db-secret-credentials
+          - secretRef:
+              name: postgres-secrets
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: node-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
